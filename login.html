@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Login | Smart Network Monitoring System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 30%, #161c27 0%, #0b0e14 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: rotate(-12deg);
+            pointer-events: none;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background-color: rgba(22, 28, 39, 0.88);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(16px);
+            position: relative;
+            z-index: 10;
+            animation: cardAppear 0.4s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-brand-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--color-blue), var(--color-cyan));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.6rem;
+            margin: 0 auto 16px auto;
+            box-shadow: 0 0 20px var(--color-blue-glow);
+        }
+
+        .login-header h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        .login-header p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .login-error-banner {
+            display: none;
+            background-color: rgba(248, 81, 73, 0.15);
+            border: 1px solid var(--color-red);
+            color: var(--color-red);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            margin-bottom: 18px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 40px;
+        }
+
+        .login-footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            margin-bottom: 20px;
+        }
+
+        .quick-credentials-box {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .quick-btn {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            color: var(--color-blue);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: 500;
+            margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--color-blue);
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-brand-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2>NOC Operations Portal</h2>
+            <p>Smart Network Monitoring System Authentication</p>
+        </div>
+
+        <!-- Alert Error Banner -->
+        <div class="login-error-banner" id="login-error-banner">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="login-error-text">Invalid username or password credentials.</span>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username or Admin ID</label>
+                <div class="input-icon-wrapper">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" class="form-control" placeholder="Enter username (e.g. admin)" required autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Security Password</label>
+                <div class="input-icon-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+                </div>
+            </div>
+
+            <div class="login-footer-links">
+                <label class="switch-label" style="font-size: 0.78rem;">
+                    <input type="checkbox" id="remember-me" checked>
+                    <span class="slider" style="width: 32px; height: 18px;"></span>
+                    <span>Remember Session</span>
+                </label>
+                <span style="color: var(--text-dim); font-size: 0.75rem;">NOC v2.4 SLA Active</span>
+            </div>
+
+            <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block" style="padding: 12px; font-size: 0.92rem;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to NOC Console
+            </button>
+        </form>
+
+        <!-- Quick Credentials Helper Box -->
+        <div class="quick-credentials-box">
+            <strong style="color: var(--text-main);">Click for Demo Login:</strong>
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                <button type="button" class="quick-btn" id="fill-admin-btn">
+                    <i class="fa-solid fa-user-shield"></i> NetAdmin (admin / admin123)
+                </button>
+                <button type="button" class="quick-btn" id="fill-user-btn">
+                    <i class="fa-solid fa-user"></i> Operator (operator / user123)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Authentication Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('login-form');
+            const errorBanner = document.getElementById('login-error-banner');
+            const errorText = document.getElementById('login-error-text');
+            const submitBtn = document.getElementById('login-submit-btn');
+
+            const fillAdminBtn = document.getElementById('fill-admin-btn');
+            const fillUserBtn = document.getElementById('fill-user-btn');
+
+            // Quick Fill Helpers
+            if (fillAdminBtn) {
+                fillAdminBtn.addEventListener('click', () => {
+                    document.getElementById('username').value = 'admin';
+                    document.getElementById('password').value = 'admin123';
+                });
+            }
+
+            if (fillUserBtn) {
+                fillUserBtn.addEventListener('click', () => {
+                    document.getElementById('username').value = 'operator';
+                    document.getElementById('password').value = 'user123';
+                });
+            }
+
+            // Check if user is already logged in
+            const existingToken = localStorage.getItem('noc_token') || sessionStorage.getItem('noc_token');
+            if (existingToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Submit Handler with Fallback
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorBanner.style.display = 'none';
+
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const rememberMe = document.getElementById('remember-me').checked;
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+
+                // Determine Backend Endpoint URL
+                const apiUrl = window.location.protocol.startsWith('http') && window.location.port === '3000'
+                    ? '/api/login'
+                    : 'http://localhost:3000/api/login';
+
+                let authenticated = false;
+                let userObj = null;
+                let tokenStr = null;
+
+                try {
+                    // Try real backend API
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        authenticated = true;
+                        tokenStr = result.token;
+                        userObj = result.user;
+                    } else if (response.status === 401) {
+                        throw new Error(result.error || 'Invalid username or security password.');
+                    }
+                } catch (err) {
+                    // If network error (e.g. backend server not running or running local file preview), fallback to client validation
+                    if (err.message.includes('Invalid username')) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to NOC Console';
+                        errorText.innerText = err.message;
+                        errorBanner.style.display = 'flex';
+                        return;
+                    }
+
+                    console.warn("Backend API unreachable, using client authentication fallback:", err);
+                    if (username === 'admin' && password === 'admin123') {
+                        authenticated = true;
+                        tokenStr = 'noc_token_admin_demo';
+                        userObj = { username: 'NetAdmin', role: 'Superuser', avatar: 'fa-user-shield' };
+                    } else if (username === 'operator' && password === 'user123') {
+                        authenticated = true;
+                        tokenStr = 'noc_token_operator_demo';
+                        userObj = { username: 'NetOperator', role: 'Operator', avatar: 'fa-user' };
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In to NOC Console';
+                        errorText.innerText = 'Invalid username or password credentials.';
+                        errorBanner.style.display = 'flex';
+                        return;
+                    }
+                }
+
+                if (authenticated && userObj) {
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('noc_token', tokenStr);
+                    storage.setItem('noc_user', JSON.stringify(userObj));
+
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Access Granted! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 400);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

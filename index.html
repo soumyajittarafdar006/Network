@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Network Monitoring System | NOC Dashboard</title>
+    <!-- Google Fonts: Inter & JetBrains Mono for telemetry data -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP NAVIGATION BAR -->
+        <header class="navbar">
+            <div class="navbar-left">
+                <button id="sidebar-toggle-btn" class="icon-btn" title="Toggle Sidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Smart Network Monitoring System</h1>
+                        <span class="brand-subtitle">Real-Time NOC Operation Center</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation Links -->
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-link active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="#devices" class="nav-link" data-tab="devices">
+                    <i class="fa-solid fa-server"></i> Devices
+                </a>
+                <a href="#analytics" class="nav-link" data-tab="analytics">
+                    <i class="fa-solid fa-microchip"></i> Analytics
+                </a>
+                <a href="#alerts" class="nav-link" data-tab="alerts">
+                    <i class="fa-solid fa-bell"></i> Alerts <span id="alerts-badge" class="badge badge-danger">3</span>
+                </a>
+                <a href="#settings" class="nav-link" data-tab="settings">
+                    <i class="fa-solid fa-sliders"></i> Settings
+                </a>
+            </nav>
+
+            <div class="navbar-right">
+                <!-- System Status Indicator -->
+                <div class="status-pill status-active" title="System Status">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">Monitoring Active</span>
+                </div>
+
+                <!-- Demo Mode Toggle Badge -->
+                <div id="demo-mode-badge" class="demo-badge" title="Click to toggle live simulation vs API mode">
+                    <i class="fa-solid fa-vial"></i>
+                    <span>DEMO MODE</span>
+                </div>
+
+                <!-- Clock Display -->
+                <div class="clock-display">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="current-time">00:00:00 UTC</span>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="icon-btn" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+
+                <!-- Notifications Button -->
+                <button id="notif-btn" class="icon-btn relative" title="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notif-dot"></span>
+                </button>
+
+                <!-- User Admin Avatar -->
+                <div class="user-profile">
+                    <div class="avatar">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">NetAdmin</span>
+                        <span class="user-role">Superuser</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT WRAPPER -->
+        <div class="main-wrapper">
+            <!-- SIDEBAR -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <span class="sidebar-title">NAVIGATION</span>
+                    <ul class="sidebar-menu">
+                        <li class="active" data-tab="dashboard">
+                            <a href="#dashboard"><i class="fa-solid fa-grip-vertical"></i> <span>Overview</span></a>
+                        </li>
+                        <li data-tab="devices">
+                            <a href="#devices"><i class="fa-solid fa-laptop-code"></i> <span>Device Inventory</span></a>
+                        </li>
+                        <li data-tab="topology">
+                            <a href="#topology"><i class="fa-solid fa-diagram-project"></i> <span>Network Topology</span></a>
+                        </li>
+                        <li data-tab="analytics">
+                            <a href="#analytics"><i class="fa-solid fa-chart-pie"></i> <span>Performance</span></a>
+                        </li>
+                        <li data-tab="alerts">
+                            <a href="#alerts"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alert Center</span></a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-title">QUICK CONTROLS</span>
+                    <div class="quick-actions">
+                        <button id="quick-refresh-btn" class="btn btn-secondary btn-block">
+                            <i class="fa-solid fa-rotate-right"></i> <span>Sync Data</span>
+                        </button>
+                        <button id="add-device-btn" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-plus"></i> <span>Add Device</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="connection-mode">
+                        <span class="mode-label">API Endpoint:</span>
+                        <code id="api-endpoint-display">localhost:3000/api</code>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CONTENT BODY -->
+            <main class="content-area">
+                <!-- VIEW 1: MAIN DASHBOARD -->
+                <section id="view-dashboard" class="view-tab active">
+                    <!-- TOP SUMMARY CARDS (6 CARDS) -->
+                    <div class="summary-cards-grid">
+                        <!-- Card 1: Total Devices -->
+                        <div class="stat-card">
+                            <div class="card-header-row">
+                                <span class="card-title">Total Devices</span>
+                                <div class="card-icon icon-blue">
+                                    <i class="fa-solid fa-network-wired"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value" id="stat-total-devices">25</h2>
+                                <div class="stat-footer">
+                                    <span class="badge badge-info"><i class="fa-solid fa-check"></i> Monitored</span>
+                                    <span class="stat-desc">Across 3 Subnets</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Online Devices -->
+                        <div class="stat-card border-green">
+                            <div class="card-header-row">
+                                <span class="card-title">Online Devices</span>
+                                <div class="card-icon icon-green">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value text-green" id="stat-online-devices">21</h2>
+                                <div class="stat-footer">
+                                    <span class="status-indicator status-online"></span>
+                                    <span class="stat-desc">Status: <strong>Online</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Offline Devices -->
+                        <div class="stat-card border-red">
+                            <div class="card-header-row">
+                                <span class="card-title">Offline Devices</span>
+                                <div class="card-icon icon-red">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value text-red" id="stat-offline-devices">4</h2>
+                                <div class="stat-footer">
+                                    <span class="status-indicator status-offline"></span>
+                                    <span class="stat-desc text-red">Attention Required</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Average Latency -->
+                        <div class="stat-card">
+                            <div class="card-header-row">
+                                <span class="card-title">Average Latency</span>
+                                <div class="card-icon icon-yellow">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value" id="stat-avg-latency">23 <span class="unit">ms</span></h2>
+                                <div class="stat-footer">
+                                    <span class="trend-indicator trend-up text-green">
+                                        <i class="fa-solid fa-arrow-down"></i> -1.2ms
+                                    </span>
+                                    <span class="stat-desc">Optimal Speed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5: Packet Loss -->
+                        <div class="stat-card">
+                            <div class="card-header-row">
+                                <span class="card-title">Packet Loss</span>
+                                <div class="card-icon icon-purple">
+                                    <i class="fa-solid fa-percent"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value" id="stat-packet-loss">1.8<span class="unit">%</span></h2>
+                                <div class="stat-footer">
+                                    <span class="badge badge-warning">Low Impact</span>
+                                    <span class="stat-desc">Target < 2.0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 6: Network Uptime -->
+                        <div class="stat-card">
+                            <div class="card-header-row">
+                                <span class="card-title">Network Uptime</span>
+                                <div class="card-icon icon-cyan">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="stat-value text-green" id="stat-uptime">98.4<span class="unit">%</span></h2>
+                                <div class="stat-footer">
+                                    <span class="badge badge-success">SLA Met</span>
+                                    <span class="stat-desc">Last 30 Days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS & PERFORMANCE ROW -->
+                    <div class="dashboard-grid-2col">
+                        <!-- Chart 1: Latency Over Time -->
+                        <div class="panel-card chart-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fa-solid fa-chart-line text-blue"></i>
+                                    <h3>Network Latency History</h3>
+                                </div>
+                                <div class="panel-actions">
+                                    <span class="live-indicator"><span class="pulse-dot"></span> LIVE TICK</span>
+                                    <select id="latency-range-select" class="form-select-sm">
+                                        <option value="realtime">Real-Time (60s)</option>
+                                        <option value="15m">Last 15 Minutes</option>
+                                        <option value="1h">Last 1 Hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="latencyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Device Distribution doughnut -->
+                        <div class="panel-card chart-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fa-solid fa-chart-pie text-cyan"></i>
+                                    <h3>Device Status Distribution</h3>
+                                </div>
+                            </div>
+                            <div class="chart-container doughnut-wrapper">
+                                <canvas id="deviceStatusChart"></canvas>
+                            </div>
+                            <div class="doughnut-legend" id="device-status-legend">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NETWORK TOPOLOGY VISUALIZATION -->
+                    <div class="panel-card margin-top">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-diagram-project text-green"></i>
+                                <h3>Network Topology & Interconnect Map</h3>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="btn btn-sm btn-secondary" id="reset-topology-btn">
+                                    <i class="fa-solid fa-compress"></i> Reset View
+                                </button>
+                                <span class="topology-legend-item"><span class="node-dot online"></span> Healthy</span>
+                                <span class="topology-legend-item"><span class="node-dot warning"></span> Warning</span>
+                                <span class="topology-legend-item"><span class="node-dot offline"></span> Disconnected</span>
+                            </div>
+                        </div>
+                        <div class="topology-container" id="topology-wrapper">
+                            <!-- SVG Animated Topology Rendered Here -->
+                            <svg id="topology-svg" width="100%" height="340"></svg>
+                        </div>
+                    </div>
+
+                    <!-- LIVE TABLE & ALERTS ROW -->
+                    <div class="dashboard-grid-table-alert margin-top">
+                        <!-- LIVE NETWORK TABLE -->
+                        <div class="panel-card table-panel">
+                            <div class="panel-header table-header">
+                                <div class="panel-title-group">
+                                    <i class="fa-solid fa-list-check text-blue"></i>
+                                    <h3>Live Network Status</h3>
+                                </div>
+
+                                <div class="table-controls">
+                                    <!-- Search -->
+                                    <div class="search-box">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <input type="text" id="device-search-input" placeholder="Search device, IP, or type...">
+                                    </div>
+                                    <!-- Filter Status -->
+                                    <select id="device-filter-status" class="form-select-sm">
+                                        <option value="all">All Statuses</option>
+                                        <option value="online">Online</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="offline">Offline</option>
+                                    </select>
+                                    <!-- Refresh -->
+                                    <button id="table-refresh-btn" class="btn btn-icon" title="Refresh Table">
+                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="data-table" id="devices-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-sort="name">Device <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="ip">IP Address <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="type">Type <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="status">Status <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="latency">Latency <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="packetLoss">Packet Loss <i class="fa-solid fa-sort"></i></th>
+                                            <th data-sort="lastSeen">Last Seen <i class="fa-solid fa-sort"></i></th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="devices-table-body">
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ALERTS PANEL -->
+                        <div class="panel-card alerts-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fa-solid fa-bell text-red"></i>
+                                    <h3>Recent Alerts</h3>
+                                </div>
+                                <button class="btn btn-sm btn-text" id="clear-alerts-btn">Clear All</button>
+                            </div>
+                            <div class="alerts-list" id="alerts-list-container">
+                                <!-- Dynamically generated alerts -->
+                            </div>
+                            <div class="alerts-footer">
+                                <button class="btn btn-secondary btn-block" id="view-all-alerts-btn">
+                                    View All Alerts Log
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NETWORK PERFORMANCE METRICS SECTION -->
+                    <div class="panel-card margin-top">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-gauge-high text-purple"></i>
+                                <h3>Network Performance Telemetry</h3>
+                            </div>
+                        </div>
+                        <div class="performance-grid">
+                            <div class="perf-card">
+                                <div class="perf-title">Average Latency</div>
+                                <div class="perf-value" id="perf-avg-latency">23.4 ms</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-green" id="perf-bar-latency" style="width: 23%;"></div>
+                                </div>
+                                <span class="perf-sub">Optimal threshold < 50ms</span>
+                            </div>
+
+                            <div class="perf-card">
+                                <div class="perf-title">Maximum Latency Peak</div>
+                                <div class="perf-value" id="perf-max-latency">142.0 ms</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-yellow" id="perf-bar-max-latency" style="width: 45%;"></div>
+                                </div>
+                                <span class="perf-sub">Spike on PC-03 before dropout</span>
+                            </div>
+
+                            <div class="perf-card">
+                                <div class="perf-title">Minimum Latency</div>
+                                <div class="perf-value" id="perf-min-latency">4.1 ms</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-blue" style="width: 10%;"></div>
+                                </div>
+                                <span class="perf-sub">Direct Fiber Backbone</span>
+                            </div>
+
+                            <div class="perf-card">
+                                <div class="perf-title">Packet Loss Rate</div>
+                                <div class="perf-value" id="perf-packet-loss">1.8%</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-red" id="perf-bar-packet-loss" style="width: 18%;"></div>
+                                </div>
+                                <span class="perf-sub">Within tolerable limits (< 3.0%)</span>
+                            </div>
+
+                            <div class="perf-card">
+                                <div class="perf-title">Network SLA Uptime</div>
+                                <div class="perf-value" id="perf-uptime">98.4%</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-green" id="perf-bar-uptime" style="width: 98.4%;"></div>
+                                </div>
+                                <span class="perf-sub">High availability tier</span>
+                            </div>
+
+                            <div class="perf-card">
+                                <div class="perf-title">ICMP Response Rate</div>
+                                <div class="perf-value" id="perf-response-rate">99.1%</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-cyan" id="perf-bar-response" style="width: 99.1%;"></div>
+                                </div>
+                                <span class="perf-sub">2,450 pings processed</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: DEVICES FULL INVENTORY -->
+                <section id="view-devices" class="view-tab">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-server"></i>
+                                <h3>Full Managed Device Inventory</h3>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="btn btn-primary" id="add-device-modal-btn">
+                                    <i class="fa-solid fa-plus"></i> Register New Device
+                                </button>
+                            </div>
+                        </div>
+                        <div id="full-devices-container">
+                            <!-- Populated with device cards grid or detailed table -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: ANALYTICS -->
+                <section id="view-analytics" class="view-tab">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <h3>Historical Bandwidth & Latency Analytics</h3>
+                            </div>
+                        </div>
+                        <div class="analytics-content">
+                            <div class="chart-container" style="height: 380px;">
+                                <canvas id="analyticsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: ALERTS FULL CENTER -->
+                <section id="view-alerts" class="view-tab">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-bell"></i>
+                                <h3>Incident & Alert History Log</h3>
+                            </div>
+                        </div>
+                        <div class="full-alerts-container" id="full-alerts-container">
+                            <!-- Full alerts detailed list -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: SETTINGS & BACKEND CONFIG -->
+                <section id="view-settings" class="view-tab">
+                    <div class="panel-card max-w-xl">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <i class="fa-solid fa-sliders"></i>
+                                <h3>System Settings & Backend API Configuration</h3>
+                            </div>
+                        </div>
+                        <form id="settings-form" class="settings-form">
+                            <div class="form-group">
+                                <label for="api-base-url-input">API Base URL (REST Endpoint)</label>
+                                <input type="text" id="api-base-url-input" class="form-control" value="http://localhost:3000/api">
+                                <small class="form-help">Specify the backend endpoint for polling or WebSockets.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="polling-interval-input">Ping Refresh Interval (seconds)</label>
+                                <input type="number" id="polling-interval-input" class="form-control" min="1" max="60" value="3">
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label class="switch-label">
+                                    <input type="checkbox" id="demo-mode-checkbox" checked>
+                                    <span class="slider"></span>
+                                    <span>Enable DEMO MODE Simulation Engine</span>
+                                </label>
+                                <small class="form-help">Uncheck this when connecting to a real Python/Node.js backend API.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="threshold-latency">Warning Latency Threshold (ms)</label>
+                                <input type="number" id="threshold-latency" class="form-control" value="50">
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save Settings</button>
+                                <button type="button" id="reset-settings-btn" class="btn btn-secondary">Reset Defaults</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-left">
+                    <strong>Smart Network Monitoring System &copy; 2026</strong>
+                    <span class="separator">•</span>
+                    <span>Real-Time Network Visibility & Performance Monitoring</span>
+                </div>
+                <div class="footer-right">
+                    <span class="badge badge-outline"><i class="fa-solid fa-code-branch"></i> v2.4.0 NOC Build</span>
+                    <span class="separator">•</span>
+                    <a href="#settings" data-tab="settings">API Status: Ready</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- DEVICE DETAILS MODAL PANEL -->
+    <div class="modal-overlay" id="device-modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span id="modal-device-icon" class="modal-device-icon"><i class="fa-solid fa-desktop"></i></span>
+                    <div>
+                        <h2 id="modal-device-name">PC-01</h2>
+                        <span id="modal-device-type" class="badge badge-info">Computer</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <!-- Column 1: Details -->
+                    <div class="modal-info-card">
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span id="modal-status-badge" class="badge badge-success">Online</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">IP Address</span>
+                            <strong id="modal-ip">192.168.1.5</strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">MAC Address</span>
+                            <code id="modal-mac">00:1A:2B:3C:4D:5E</code>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Current Latency</span>
+                            <span id="modal-latency" class="stat-highlight">15 ms</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Packet Loss</span>
+                            <span id="modal-packet-loss">0%</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Uptime</span>
+                            <span id="modal-uptime">99.8%</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Last Seen</span>
+                            <span id="modal-last-seen">Just now</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Subnet Gateway</span>
+                            <span>192.168.1.1</span>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Individual Latency Graph -->
+                    <div class="modal-chart-card">
+                        <h4>Device Ping Telemetry (Last 30 Pings)</h4>
+                        <div class="modal-chart-container">
+                            <canvas id="modalDeviceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnostics log -->
+                <div class="modal-log-section margin-top">
+                    <h4>Connection Log History</h4>
+                    <ul id="modal-history-list" class="history-log-list">
+                        <!-- History events inserted by JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-ping-btn">
+                    <i class="fa-solid fa-wifi"></i> Run Manual ICMP Ping Test
+                </button>
+                <button class="btn btn-danger" id="modal-reboot-btn">
+                    <i class="fa-solid fa-power-off"></i> Send Reset Signal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DEVICE MODAL -->
+    <div class="modal-overlay" id="add-device-modal">
+        <div class="modal-container max-w-md">
+            <div class="modal-header">
+                <h3>Register New Device</h3>
+                <button class="modal-close-btn" id="add-modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="add-device-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Device Name</label>
+                        <input type="text" id="add-name" class="form-control" placeholder="e.g. Server-04" required>
+                    </div>
+                    <div class="form-group">
+                        <label>IP Address</label>
+                        <input type="text" id="add-ip" class="form-control" placeholder="e.g. 192.168.1.50" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Device Type</label>
+                        <select id="add-type" class="form-control">
+                            <option value="Computer">Computer</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="IoT Device">IoT Device</option>
+                            <option value="Server">Server</option>
+                            <option value="Router">Router / Switch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Device</button>
+                    <button type="button" class="btn btn-secondary" id="add-modal-cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER FOR REALTIME NOTIFICATIONS -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- JAVASCRIPT MODULES -->
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/topology.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
